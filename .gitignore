@@ -1,5 +1,5 @@
 # ignore the user configuration file
-conf.yaml
+
 
 # ignore non-default background images
 /backgrounds/*
@@ -80,7 +80,7 @@ GPT-SoVITS-v2/
 GPT-SoVITS-v3/
 GPT-SoVITS-xulianv2/
 pretrained/*
-speakerlab/*
+
 src/open_llm_vtuber/tts/models/*
 src/open_llm_vtuber/vad/models/*
 src/open_llm_vtuber/translate/models/*

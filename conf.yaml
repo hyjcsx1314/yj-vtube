@@ -1,0 +1,417 @@
+# ===========================
+# 配置文件说明, conf.yaml 中的配置
+# 一些配置项被注释掉了，这些适合高级用户预设使用，如果你需要
+# 使用，将这些配置项从注释中取消，并复制到 conf.yaml 文件中，替换掉conf.yaml
+# ===========================
+# 系统配置，这些是程序启动时需要加载的配置
+system_config:
+  conf_version: 'v1.1.1' # 配置文件版本
+  host: 'localhost' # 服务器监听的地址，'0.0.0.0' 表示监听所有网络接口，如果你需要更安全，使用 '127.0.0.1'（仅允许本地访问）
+  port: 15066 # 服务器监听的端口
+  config_alts_dir: 'characters' # 用于存放角色配置的目录
+  tool_prompts: # 要加入到角色提示词中的工具提示词
+    live2d_expression_prompt: 'live2d_expression_prompt' # 在系统提示词末尾添加的 LLM（大语言模型）需要识别的面部表情的关键词。支持的关键词会自动替换到 `[<insert_emomap_keys>]` 的位置。
+    # 如果你 think_tag_prompt 这个设置，具备思考能力的 LLM 也会展示它的想法，这些想法会以动作和表情的形式呈现，并最终合成到语音中。更多信息请参考 think_tag_prompt。
+    # think_tag_prompt: 'think_tag_prompt'
+  group_conversation_prompt: 'group_conversation_prompt' # 在使用群聊时，这个提示词格式会被添加到每个 AI 角色的提示词中。
+
+# 默认角色配置
+character_config:
+  #conf_name: 'shizuku-local' # 角色配置文件的名称
+  conf_name: 'dr'
+  conf_uid: 'dr' # 角色配置的唯一标识符
+  live2d_model_name: 'dr' # Live2D 模型名称
+  character_name: 'dr' # 在群聊中使用，显示为 AI 角色的名称
+  avatar: 'shizuku.png' # 在群聊中使用的头像图片，将其保存到 avatars 文件夹中。如果你使用角色名称的拼音首字母作为头像
+  human_name: 'Human' # 在群聊中使用，显示为"FF"（人类）的名称
+
+  # ============== 提示词 ==============
+
+  # 角色设定选项，这些是
+  # 只有在使用单角色模式时才会使用的人格提示词
+  # 如果你想要创建新的角色，在 characters 文件夹中添加角色
+  persona_prompt: '你是一个可爱的小女孩，住在深山里，现在在上大学，喜欢说每句话都带语气词，显示可爱的一面'
+
+  #  =================== LLM 配置部分 ===================
+
+  agent_config:
+    conversation_agent_choice: 'basic_memory_agent' # 对话代理选择
+
+    agent_settings:
+      basic_memory_agent:
+        # 这个 AI 代理没有什么特别的。
+        # 在 llm_config 中选择一个 llm 提供者
+        # 你可以选择以下任何一个：
+        # 例如：
+        # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
+        # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
+        # 'mistral_llm'
+        llm_provider: 'qwen_vl_llm' # 使用的 LLM 提供者
+        # 是否在第一句响应时加上逗号直接进行语音的约0.5秒延迟（默认：True）
+        faster_first_response: true
+        # 分段方法：'regex' 或 'pysbd'
+        segment_method: 'pysbd'
+
+      mem0_agent:
+        vector_store:
+          provider: 'qdrant' # 向量存储提供者
+          config:
+            collection_name: 'test' # 集合名称
+            host: 'localhost' # 服务器地址
+            port: 6333 # 端口号
+            embedding_model_dims: 1024 # 嵌入模型维度
+
+        # mem0 代理自己的 llm 设置，与上面的 llm_config 不同
+        # 有关更多详细信息，请查看我们的文档
+        llm:
+          provider: 'ollama' # 使用的 LLM 提供者
+          config:
+            model: 'llama3.1:latest' # 使用的模型
+            temperature: 0 # 温度
+            max_tokens: 8000 # 最大生成长度
+            ollama_base_url: 'http://localhost:11434' # Ollama 服务器 URL
+
+        embedder:
+          provider: 'ollama' # 使用的嵌入提供者
+          config:
+            model: 'mxbai-embed-large:latest' # 使用的模型
+            ollama_base_url: 'http://localhost:11434' # Ollama 服务器 URL
+
+      hume_ai_agent:
+        api_key: ''
+        host: 'api.hume.ai' # 一般不需要修改
+        config_id: '' # 可选
+        idle_timeout: 15 # 空闲超时断开连接的时间
+
+      # MemGPT 设置（MemGPT 暂时被移除）
+      ##
+
+    llm_configs:
+      # 一个通用配置，用于不同场景下使用的不同状态 llm 提供者的凭证和配置详细信息
+
+      # Qwen-VL 配置
+      qwen_vl_llm:
+        base_url: 'http://192.168.1.9:11433/v1'
+        model: 'Qwen2.5-VL-7B-Instruct'
+        temperature: 1.0
+
+      # OpenAI 兼容接口配置
+      openai_compatible_llm:
+        base_url: 'http://localhost:11434/v1' # 服务器 URL
+        llm_api_key: 'somethingelse' # API 密钥
+        organization_id: 'org_eternity' # 组织 ID
+        project_id: 'project_glass' # 项目 ID
+        model: 'qwen2.5:latest' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+        interrupt_method: 'user'
+        # 用于表示中断信号的方法（提示词模式）
+        # 如果LLM支持在响应中的任何位置插入系统提示词，使用'system'
+        # 否则使用'user'，一般不需要修改这个设置
+
+      # Claude API 配置
+      claude_llm:
+        base_url: 'https://api.anthropic.com' # 服务器 URL
+        llm_api_key: 'YOUR API KEY HERE' # API 密钥
+        model: 'claude-3-haiku-20240307' # 使用的模型
+
+      llama_cpp_llm:
+        model_path: '<path-to-gguf-model-file>' # GGUF 模型文件路径
+        verbose: false # 是否显示详细信息
+
+      ollama_llm:
+        base_url: 'http://192.168.3.74:11434/v1' # 服务器 URL
+        #model: 'deepseek-r1:70b' # 使用的模型
+        #model: 'qwen:14b' # 使用的模型
+        model: 'Qwen2.5-VL-7B-Instruct' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+        # 模型在内存中保存的时间（秒）
+        # 设置为 -1 表示模型将永远保存在内存中，即使退出 open llm vtuber 也是如此
+        keep_alive: -1
+        unload_at_exit: true # 退出时是否在内存中卸载模型
+
+      openai_llm:
+        llm_api_key: 'Your Open AI API key' # OpenAI API 密钥
+        model: 'gpt-4o' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+
+      gemini_llm:
+        llm_api_key: 'Your Gemini API Key' # Gemini API 密钥
+        model: 'gemini-2.0-flash-exp' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+
+      zhipu_llm:
+        llm_api_key: 'Your ZhiPu AI API key' # 智谱 AI API 密钥
+        model: 'glm-4-flash' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+
+      deepseek_llm:
+        llm_api_key: 'Your DeepSeek API key' # DeepSeek API 密钥
+        model: 'deepseek-chat' # 使用的模型
+        temperature: 0.7 # 注意，DeepSeek 的温度范围是 0 到 1
+
+      mistral_llm:
+        llm_api_key: 'Your Mistral API key' # Mistral API 密钥
+        model: 'pixtral-large-latest' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+
+      groq_llm:
+        llm_api_key: 'your groq API key' # Groq API 密钥
+        model: 'llama-3.3-70b-versatile' # 使用的模型
+        temperature: 1.0 # 温度，范围在 0 到 2 之间
+
+  # === 语音识别 ===
+  asr_config:
+    # 语音识别模型选择：'faster_whisper', 'whisper_cpp', 'whisper', 'azure_asr', 'fun_asr', 'groq_whisper_asr', 'sherpa_onnx_asr'
+    asr_model: 'sherpa_onnx_asr' # 使用的语音识别模型
+
+    azure_asr:
+      api_key: 'azure_api_key' # Azure API 密钥
+      region: 'eastus' # 区域
+      languages: ['en-US', 'zh-CN']  # 要识别的语言列表
+
+    # Faster Whisper 配置
+    faster_whisper:
+      model_path: 'distil-medium.en' # 模型路径，distil-medium.en 是一个轻量级英语模型，如果你有好的 GPU，可以使用 distil-large-v3
+      download_root: 'models/whisper' # 模型下载目录
+      language: 'en' # 语言，en、zh 等，留空表示自动检测
+      device: 'auto' # 设备，cpu、cuda 或 auto，faster-whisper 不支持 mps
+
+    whisper_cpp:
+      # 所有可用模型都在 https://abdeladim-s.github.io/pywhispercpp/#pywhispercpp.constants.AVAILABLE_MODELS
+      model_name: 'small' # 模型名称
+      model_dir: 'models/whisper' # 模型目录
+      print_realtime: false # 是否实时打印
+      print_progress: false # 是否打印进度
+      language: 'auto' # 语言，en、zh、auto
+
+    whisper:
+      name: 'medium' # 模型名称
+      download_root: 'models/whisper' # 模型下载目录
+      device: 'cpu' # 设备
+
+    # FunASR 目前需要额外安装一些依赖，比如中文/英文模型。这些在初始化时会自动下载。
+    # 如果你不想使用这些，可以使用 Faster-Whisper 作为替代，它提供了全流程的解决方案。
+    fun_asr:
+      model_name: 'iic/SenseVoiceSmall' # 或 'paraformer-zh'
+      vad_model: 'fsmn-vad' # 当音频长度超过 30 秒时需要使用的
+      punc_model: 'ct-punc' # 标点符号模型
+      device: 'cpu' # 设备
+      disable_update: true # 是否每次启动时都更新 FunASR 模型
+      ncpu: 4 # CPU 内部使用的线程数
+      hub: 'ms' # ms、默认，使用 ModelScope 下载模型。使用 hf 则从 Hugging Face 下载模型。
+      use_itn: false # 是否使用数字格式转换
+      language: 'auto' # zh, en, auto
+
+    # pip install sherpa-onnx
+    # 文档：https://k2-fsa.github.io/sherpa/onnx/index.html
+    # ASR 模型下载：https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models
+    sherpa_onnx_asr:
+      model_type: 'sense_voice' # 'transducer', 'paraformer', 'nemo_ctc', 'wenet_ctc', 'whisper', 'tdnn_ctc'
+      # 根据 model_type 选择以下其中一个：
+      # --- 如果 model_type: 'transducer' ---
+      # encoder: ''        # 编码器模型路径，例如 'path/to/encoder.onnx'
+      # decoder: ''        # 解码器模型路径，例如 'path/to/decoder.onnx'
+      # joiner: ''         # 连接器模型路径，例如 'path/to/joiner.onnx'
+      # --- 如果 model_type: 'paraformer' ---
+      # paraformer: ''     # paraformer 模型路径，例如 'path/to/model.onnx'
+      # --- 如果 model_type: 'nemo_ctc' ---
+      # nemo_ctc: ''        # NeMo CTC 模型路径，例如 'path/to/model.onnx'
+      # --- 如果 model_type: 'wenet_ctc' ---
+      # wenet_ctc: ''       # WeNet CTC 模型路径，例如 'path/to/model.onnx'
+      # --- 如果 model_type: 'tdnn_ctc' ---
+      # tdnn_model: ''      # TDNN CTC 模型路径，例如 'path/to/model.onnx'
+      # --- 如果 model_type: 'whisper' ---
+      # whisper_encoder: '' # Whisper 编码器模型路径，例如 'path/to/encoder.onnx'
+      # whisper_decoder: '' # Whisper 解码器模型路径，例如 'path/to/decoder.onnx'
+      # --- 如果 model_type: 'sense_voice' ---
+      # SenseVoice 是专门为自动下载模型设计的逻辑，这些模型需要自己手动下载
+      sense_voice: './models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/model.int8.onnx' # SenseVoice 模型路径，例如 'path/to/model.onnx'
+      tokens: './models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/tokens.txt' # tokens.txt 路径，这些模型都需要
+      # --- 可选配置，显示默认值 ---
+      # hotwords_file: ''     # 热词文件路径，如果使用热词
+      # hotwords_score: 1.5   # 热词分数
+      # modeling_unit: ''     # 热词的建模单元，根据需要
+      # bpe_vocab: ''         # BPE 词表路径，根据需要
+      num_threads: 4 # 线程数
+      # whisper_language: '' # Whisper 模型的语言，例如 'en'、'zh' 等 - 如果使用 Whisper
+      # whisper_task: 'transcribe'  # Whisper 模型的任务，'transcribe' 或 'translate' - 如果使用 Whisper
+      # whisper_tail_paddings: -1   # Whisper 模型的尾部填充（如果使用 Whisper）
+      # blank_penalty: 0.0    # 空白符号的惩罚
+      # decoding_method: 'greedy_search'  # 'greedy_search' 或 'modified_beam_search'
+      # debug: False # 设置调试模式
+      # sample_rate: 16000 # 采样率，应该与模型预期的采样率匹配
+      # feature_dim: 80       # 特征维度，应该与模型预期的特征维度匹配
+      use_itn: true # 对于 SenseVoice 模型，是否使用 ITN（如果使用 SenseVoice 模型，应该设置为 False）
+      # 运行平台：cpu 或 cuda（cuda 需要额外设置，请参考文档）
+      provider: 'cpu'
+
+    groq_whisper_asr:
+      api_key: ''
+      model: 'whisper-large-v3-turbo' # 或者 'whisper-large-v3'
+      lang: '' # 留空表示自动检测
+
+  # =================== 文本转语音 ===================
+  tts_config:
+    tts_model: 'gpt_sovits_tts' # 使用的文本转语音模型
+    # 文本转语音模型选择：
+    #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
+    #   'cosyvoice_tts', 'melo_tts', 'coqui_tts',
+    #   'fish_api_tts', 'x_tts', 'gpt_sovits_tts', 'sherpa_onnx_tts', 'spark_tts'
+
+    azure_tts:
+      api_key: 'azure-api-key' # Azure API 密钥
+      region: 'eastus' # 区域
+      voice: 'en-US-AshleyNeural' # 声音
+      pitch: '26' # 音调，范围在 0 到 100 之间
+      rate: '1' # 语速
+
+    bark_tts:
+      voice: 'v2/en_speaker_1' # 声音
+
+    edge_tts:
+      # 查看文档：https://github.com/rany2/edge-tts
+      # 使用 `edge-tts --list-voices` 列出所有可用的声音
+      voice: zh-CN-XiaoxiaoNeural # 'en-US-AvaMultilingualNeural' #'zh-CN-XiaoxiaoNeural' # 'ja-JP-NanamiNeural'
+
+    # pyttsx3_tts 没有任何配置
+
+    cosyvoice_tts: # Cosy Voice TTS 连接的 gradio webui
+      # 查看我们的文档了解这些配置项的作用
+      client_url: 'http://127.0.0.1:50000/' # CosyVoice gradio 显示 webui url
+      mode_checkbox_group: '预训练角色' # 模式选择框组
+      sft_dropdown: '可爱女' # 微调下拉列表
+      prompt_text: '' # 提示文本
+      prompt_wav_upload_url: 'https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav' # 提示 wav 上传 url
+      prompt_wav_record_url: 'https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav' # 提示 wav 录制 url
+      instruct_text: '' # 指令文本
+      seed: 0 # 种子
+      api_name: '/generate_audio' # API 名称
+
+    cosyvoice2_tts: # Cosy Voice TTS 连接的 gradio webui
+      # 查看我们的文档了解这些配置项的作用
+      client_url: 'http://192.168.3.74:8000/' # CosyVoice gradio 显示 webui url
+      mode_checkbox_group: '预训练角色' # 模式选择框组, 可选: '预训练角色', '3s快速克隆', '自然语言控制', '自然语言克隆'
+      sft_dropdown: '可爱女' # 微调下拉列表
+      prompt_text: '' # 提示文本
+      prompt_wav_upload_url: 'https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav' # 提示 wav 上传 url
+      prompt_wav_record_url: 'https://github.com/gradio-app/gradio/raw/main/test/test_files/audio_sample.wav' # 提示 wav 录制 url
+      instruct_text: '' # 指令文本
+      stream: false # 流式输出
+      seed: 0 # 种子
+      speed: 1.0 # 语速
+      api_name: '/generate_audio' # API 名称
+
+    melo_tts:
+      speaker: 'EN-Default' # ZH
+      language: 'EN' # ZH
+      device: 'auto' # 设备，可选：'cpu'、'cuda'、'cuda:0' 或 'mps'
+      speed: 1.0 # 语速
+
+    x_tts:
+      api_url: 'http://127.0.0.1:8020/tts_to_audio' # API URL
+      speaker_wav: 'female' # 说话人 WAV 文件
+      language: 'en' # 语言
+
+    gpt_sovits_tts:
+      api_url: 'http://192.168.1.9:3330/tts' # API URL
+      text_lang: 'zh' # 文本语言
+      voice_preset: "ganyu" # 预设音色
+      top_k: 3 # 采样参数
+      top_p: 0.8 # 采样参数
+      temperature: 0.7 # 温度参数
+      repetition_penalty: 5.0 # 重复惩罚参数
+      speed_factor: 1.0 # 语速因子
+      text_split_method: 'cut5' # 文本分割方法
+      batch_size: '3' # 批处理大小
+      batch_threshold: 0.9 # 批处理阈值
+      split_bucket: true # 分桶开关
+
+      ref_audio_path: ''
+      prompt_lang: 'zh'
+      prompt_text: ''
+      media_type: 'wav'
+      streaming_mode: 'false'
+    spark_tts:
+      api_url: 'http://192.168.1.9:8000' # SparkTTS API URL
+      ref_audio_path: 'C:/Users/20222/yj-VTuber/GPT-SoVITS-v2/wav/本堂主略施小计，你就败下阵来了，嘿嘿。.wav' # 参考音频文件路径
+      prompt_text: '本堂主略施小计，你就败下阵来了，嘿嘿。' # 参考音频对应的文本
+
+    fish_api_tts:
+      # Fish TTS API 的 API 密钥
+      api_key: ''
+      # 要使用的参考音频的 ID，在 [Fish Audio 网站](https://fish.audio/) 上获取
+      reference_id: ''
+      # 'normal' 或 'balanced'，balanced 更快但质量较低
+      latency: 'balanced' # 延迟
+      base_url: 'https://api.fish.audio' # 基础 URL
+
+    coqui_tts:
+      # 要使用的 TTS 模型的名称。如果为空，则使用默认模型
+      # 执行 'tts --list_models' 列出 coqui-tts 支持的模型
+      # 一些示例：
+      # - 'tts_models/en/ljspeech/tacotron2-DDC'（英语说话人）
+      # - 'tts_models/zh-CN/baker/tacotron2-DDC-GST'（中文说话人）
+      # - 'tts_models/multilingual/multi-dataset/your_tts'（多语言说话人）
+      # - 'tts_models/multilingual/multi-dataset/xtts_v2'（F 说话人）
+      model_name: 'tts_models/en/ljspeech/tacotron2-DDC' # 模型名称
+      speaker_wav: '' # 说话人 WAV 文件
+      language: 'en' # 语言
+      device: '' # 设备
+
+    # pip install sherpa-onnx
+    # 文档：https://k2-fsa.github.io/sherpa/onnx/index.html
+    # TTS 模型下载：https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models
+    # 查看 config_alts 获取更多示例
+    sherpa_onnx_tts:
+      vits_model: '/path/to/tts-models/vits-melo-tts-zh_en/model.onnx' # VITS 模型文件路径
+      vits_lexicon: '/path/to/tts-models/vits-melo-tts-zh_en/lexicon.txt' # 词典文件路径（可选）
+      vits_tokens: '/path/to/tts-models/vits-melo-tts-zh_en/tokens.txt' # 词表文件路径
+      vits_data_dir: '' # '/path/to/tts-models/vits-piper-en_GB-cori-high/espeak-ng-data'  # espeak-ng 数据路径（可选）
+      vits_dict_dir: '/path/to/tts-models/vits-melo-tts-zh_en/dict' # Jieba 词典路径（可选，中文模型）
+      tts_rule_fsts: '/path/to/tts-models/vits-melo-tts-zh_en/number.fst,/path/to/tts-models/vits-melo-tts-zh_en/phone.fst,/path/to/tts-models/vits-melo-tts-zh_en/date.fst,/path/to/tts-models/vits-melo-tts-zh_en/new_heteronym.fst' # 规则 FST 文件路径（可选）
+      max_num_sentences: 2 # 每批处理的最大句子数，-1 表示全部
+      sid: 1 # 说话人 ID（用于多说话人模型）
+      provider: 'cpu' # 使用 'cpu'、'cuda'（GPU）或 'coreml'（Apple）
+      num_threads: 1 # 使用的线程数
+      speed: 1.0 # 语速，1.0 为正常速度
+      debug: false # 设置调试模式（True/False）
+
+
+  # =================== Voice Activity Detection ===================
+  vad_config:
+    vad_model: 'silero_vad'
+
+    silero_vad:
+      orig_sr: 16000 # 原始音频采样率
+      target_sr: 16000 # 目标音频采样率
+      prob_threshold: 0.4 # 语音活动的概率阈值
+      db_threshold: 60 # 语音活动的分贝阈值
+      required_hits: 3 # 连续检测到的次数阈值
+      required_misses: 24 # 连续未检测到的次数阈值
+      smoothing_window: 5 # 语音活动的平滑窗口大小
+
+  tts_preprocessor_config:
+    # 用于处理 TTS 文本的预处理配置
+
+    remove_special_char: true # 在生成音频时删除特殊字符
+    ignore_brackets: true # 在生成音频时删除方括号内的内容
+    ignore_parentheses: true # 在生成音频时删除圆括号内的内容
+    ignore_asterisks: true # 在生成音频时删除星号内的内容（包括双星号）
+    ignore_angle_brackets: true # 在生成音频时删除尖括号内的内容
+
+    translator_config:
+      # 在...等情况下，将中文翻译成英文，以便 TTS 说话人能够
+      translate_audio: false # 注意：在确保其他功能都成功后再考虑这个选项，否则会翻译失败
+      translate_provider: 'deeplx' # 翻译提供者，目前支持 deeplx 和 tencent
+
+
+      #  腾讯文本翻译  每次500个字符  记得关闭后付费,需要分段前后 腾讯云控制台 > 系统设置 关闭
+      #   https://cloud.tencent.com/document/product/551/35017
+      #   https://console.cloud.tencent.com/cam/capi
+      tencent:
+        secret_id: ''
+        secret_key: ''
+        region: 'ap-guangzhou'
+        source_lang: 'zh'
+        target_lang: 'ja'
+
