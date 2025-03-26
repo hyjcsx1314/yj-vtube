@@ -1,6 +1,9 @@
 本地需下载模型（硬盘中）：放在yj-VTuber路径下
+
 声源检测：pretrained
+
 ASR识别：models
+
 调用api相关端口：
 各模型api调用ip端口：
 asr：
